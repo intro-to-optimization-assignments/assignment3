@@ -167,6 +167,7 @@ class RusselApproximation:
             self.define_basic_variable()
 
     def get_table_solution(self) -> List[List[float]]:
+        self.find_solution()
         solution_table: List[List[float]] = [
             [0.0 for _ in range(len(self.demand))]
             for _ in range(len(self.supply))
