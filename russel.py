@@ -1,4 +1,3 @@
-from itertools import count
 from json.encoder import INFINITY
 from typing import List, Tuple, Set, Dict
 
@@ -43,15 +42,21 @@ class RusselApproximation:
         self._u_v_indices: Set[Tuple[int, int]] = set()
         self.deltas: Set[Delta] = set()
         self.solution: Dict[Delta, float] = dict()
+        self._closed_i: Set[int] = set()
+        self._closed_j: Set[int] = set()
 
     def _define_u(self) -> None:
-        self.u.clear()
+        self.u = [0.0 for _ in range(len(self.supply))]
 
         for i in range(len(self.supply)):
+            if i in self._closed_i: continue
+
             current_index: Tuple[int, int] = (0, 0)
             current_u_i: float = -INFINITY
 
             for j in range(len(self.demand)):
+                if j in self._closed_j: continue
+
                 if current_u_i < self.table_content[i][j]:
                     current_u_i = self.table_content[i][j]
                     current_index = (i, j)
@@ -60,13 +65,17 @@ class RusselApproximation:
             self._u_v_indices.add(current_index)
 
     def _define_v(self) -> None:
-        self.v.clear()
+        self.v = [0.0 for _ in range(len(self.demand))]
 
         for j in range(len(self.demand)):
+            if j in self._closed_j: continue
+
             current_index: Tuple[int, int] = (0, 0)
             current_v_j: float = -INFINITY
 
             for i in range(len(self.supply)):
+                if i in self._closed_i: continue
+
                 if current_v_j < self.table_content[i][j]:
                     current_v_j = self.table_content[i][j]
                     current_index = (i, j)
@@ -84,7 +93,9 @@ class RusselApproximation:
         for i in range(len(self.supply)):
             for j in range(len(self.demand)):
 
-                if (i, j) in self._u_v_indices:
+                if ((i, j) in self._u_v_indices
+                        or i in self._closed_i
+                        or j in self._closed_j):
                     continue
 
                 current_delta: Delta = Delta(
@@ -111,10 +122,10 @@ class RusselApproximation:
         self.demand[basic_variable.j] -= amount
 
         if self.supply[basic_variable.i] == 0:
-            self.remove_row(basic_variable.i)
+            self._closed_i.add(basic_variable.i)
 
         if self.demand[basic_variable.j] == 0:
-            self.remove_column(basic_variable.j)
+            self._closed_j.add(basic_variable.j)
 
     def define_basic_variable(self) -> None:
         basic_variable: Delta = min(self.deltas)
@@ -125,21 +136,26 @@ class RusselApproximation:
         self.add_solution(basic_variable, amount)
 
     def define_last_basic_variables(self) -> None:
-        i_last, j_last = 0, 0
-        while True:
-            if len(self.table_content) == 0:
-                break
-            basic_variable = Delta(
-                c=self.table_content[i_last][j_last],
-                u_i=self.u[i_last],
-                v_j=self.v[j_last],
-                i=i_last, j=j_last
-            )
-            amount: float = min(
-                self.supply[basic_variable.i],
-                self.demand[basic_variable.j]
-            )
-            self.add_solution(basic_variable, amount)
+        for i in range(len(self.supply)):
+            for j in range(len(self.demand)):
+                if len(self._closed_i) == len(self.supply) and len(self._closed_j) == len(self.demand):
+                    break
+
+                if i in self._closed_i or j in self._closed_j:
+                    continue
+
+                self.define_u_v()
+                basic_variable = Delta(
+                    c=self.table_content[i][j],
+                    u_i=self.u[i],
+                    v_j=self.v[j],
+                    i=i, j=j
+                )
+                amount: float = min(
+                    self.supply[basic_variable.i],
+                    self.demand[basic_variable.j]
+                )
+                self.add_solution(basic_variable, amount)
 
     def find_solution(self):
         while True:
