@@ -166,26 +166,38 @@ class RusselApproximation:
                 break
             self.define_basic_variable()
 
+    def get_table_solution(self) -> List[List[float]]:
+        solution_table: List[List[float]] = [
+            [0.0 for _ in range(len(self.demand))]
+            for _ in range(len(self.supply))
+        ]
+        for basic_variable in self.solution:
+            i = basic_variable.i
+            j = basic_variable.j
+            solution_table[i][j] = self.solution[basic_variable]
+
+        return solution_table
+
+def custom_input():
+    vector_s = [float(i) for i in input("Enter the supply vector S: ").split()]
+    matrix_c = []
+    print("Enter rows of cost matrix C line by line")
+    for i in range(3):
+        row = list(map(float, input().split()))
+        matrix_c.append(row)
+    vector_d = [float(i) for i in input("Enter the demand vector D: ").split()]
+    return vector_s, matrix_c, vector_d
 
 def main():
-    table_content = [
-        [30.0, 27.0, 53.0, 38.0],
-        [47.0, 51.0, 29.0, 64.0],
-        [49.0, 36.0, 15.0, 11.0],
-    ]
-    supply = [13.0, 42.0, 8.0]
-    demand = [2.0, 12.0, 4.0, 45.0]
+    supply, table_content, demand = custom_input()
     russel = RusselApproximation(
         table_content,
         supply,
         demand
     )
     russel.find_solution()
-    print(russel.solution)
-    print(russel.table_content)
-    print(russel.supply)
-    print(russel.demand)
-    pass
+    for row in russel.get_table_solution():
+        print(*row)
 
 
 if __name__ == '__main__':
