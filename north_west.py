@@ -33,5 +33,7 @@ def apply_nw(vector_s, matrix_c, vector_d):
             # Display the initial basic feasible solution
             print()
             print("Vectors of Initial Basic Feasible Solution (x0) using Northwest Corner Method:")
+
+            col_widths = [max(len(str(item)) for item in col) for col in zip(*x0)]
             for row in x0:
-                print(" ".join(map(str, row)))
+                print("".join(f"{str(item):<{col_widths[i]}}  " for i, item in enumerate(row)))

@@ -1,3 +1,5 @@
+from typing import List
+
 from north_west import apply_nw
 from russel import RusselApproximation
 from vogel import vogels_approximation
@@ -12,6 +14,7 @@ def custom_input():
         matrix_c.append(row)
     vector_d = [float(i) for i in input("Enter the demand vector D: ").split()]
     return vector_s, matrix_c, vector_d
+
 
 def format_cell(value):
     return "-" if value == "-" else f"{value:.0f}"
@@ -44,6 +47,13 @@ def print_initial_matrix(vector_s, matrix_c, vector_d):
     demand_str += "".join(f"{int(d):^{col_widths[j + 1]}}" for j, d in enumerate(vector_d))
     print(demand_str)
 
+
+def print_solution(solution: List[List[float]]) -> None:
+    col_widths = [max(len(str(item)) for item in col) for col in zip(*solution)]
+    for row in solution:
+        print("".join(f"{str(item):<{col_widths[i]}}  " for i, item in enumerate(row)))
+
+
 def main():
     supply, table_content, demand = custom_input()
     print_initial_matrix(supply, table_content, demand)
@@ -53,15 +63,15 @@ def main():
     print()
     print("Vectors of Initial Basic Feasible Solution (x0) using Vogel's Approximation Method:")
 
-    for row in vogels_approximation(supply, table_content, demand):
-        print(*row)
+    vogel_solution = vogels_approximation(supply, table_content, demand)
+    print_solution(vogel_solution)
 
     print()
     print("Vectors of Initial Basic Feasible Solution (x0) using Russel's Approximation Method:")
 
     russel = RusselApproximation(table_content, supply, demand)
-    for row in russel.get_table_solution():
-        print(*row)
+    russel_solution = russel.get_table_solution()
+    print_solution(russel_solution)
 
 
 if __name__ == "__main__":
