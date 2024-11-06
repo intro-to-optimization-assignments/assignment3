@@ -106,15 +106,6 @@ class RusselApproximation:
                 )
                 self.deltas.add(current_delta)
 
-    def remove_row(self, i: int) -> None:
-        self.table_content.pop(i)
-        self.supply.pop(i)
-
-    def remove_column(self, j: int) -> None:
-        for i in range(len(self.supply)):
-            self.table_content[i].pop(j)
-        self.demand.pop(j)
-
     def add_solution(self, basic_variable: Delta, amount: float) -> None:
         self.solution[basic_variable] = amount
 
@@ -179,6 +170,7 @@ class RusselApproximation:
 
         return solution_table
 
+
 def custom_input():
     vector_s = [float(i) for i in input("Enter the supply vector S: ").split()]
     matrix_c = []
@@ -188,6 +180,7 @@ def custom_input():
         matrix_c.append(row)
     vector_d = [float(i) for i in input("Enter the demand vector D: ").split()]
     return vector_s, matrix_c, vector_d
+
 
 def main():
     supply, table_content, demand = custom_input()

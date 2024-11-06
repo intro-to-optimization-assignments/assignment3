@@ -1,5 +1,6 @@
 from north_west import apply_nw
 from russel import RusselApproximation
+from vogel import vogels_approximation
 
 
 def custom_input():
@@ -50,11 +51,18 @@ def main():
     apply_nw(supply[:], table_content[:], demand[:])
 
     print()
+    print("Vectors of Initial Basic Feasible Solution (x0) using Vogel's Approximation Method:")
+
+    for row in vogels_approximation(supply, table_content, demand):
+        print(*row)
+
+    print()
     print("Vectors of Initial Basic Feasible Solution (x0) using Russel's Approximation Method:")
 
     russel = RusselApproximation(table_content, supply, demand)
     for row in russel.get_table_solution():
         print(*row)
+
 
 if __name__ == "__main__":
     main()

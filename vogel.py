@@ -17,7 +17,7 @@ def calculate_cell(table, i, j, rows_cnt, cols_cnt):
     return row_sum, col_sum
 
 
-def Vogels_approximation(S_original, C_original, D_original):
+def vogels_approximation(S_original, C_original, D_original):
     C = C_original[:]
     S = S_original[:]
     D = D_original[:]
@@ -125,12 +125,12 @@ def Vogels_approximation(S_original, C_original, D_original):
     
 
 
-S_cnt = 3
-D_cnt = 4
-Supply_vector = [float(x) for x in input().split()]
-Cost_matrix = []
-for i in range(S_cnt):
-    vector = [float(x) for x in input().split()]
-    Cost_matrix.append(vector)
-Demand_vector = [float(x) for x in input().split()]
-print(Vogels_approximation(Supply_vector, Cost_matrix, Demand_vector))
+# S_cnt = 3
+# D_cnt = 4
+# Supply_vector = [float(x) for x in input().split()]
+# Cost_matrix = []
+# for i in range(S_cnt):
+#     vector = [float(x) for x in input().split()]
+#     Cost_matrix.append(vector)
+# Demand_vector = [float(x) for x in input().split()]
+# print(vogels_approximation(Supply_vector, Cost_matrix, Demand_vector))
