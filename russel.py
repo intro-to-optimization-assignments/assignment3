@@ -37,16 +37,16 @@ class RusselApproximation:
         self.table_content = table_content
         self.supply = supply
         self.demand = demand
-        self.u: List[float] = list()
-        self.v: List[float] = list()
+        self._u: List[float] = list()
+        self._v: List[float] = list()
         self._u_v_indices: Set[Tuple[int, int]] = set()
-        self.deltas: Set[Delta] = set()
+        self._deltas: Set[Delta] = set()
         self.solution: Dict[Delta, float] = dict()
         self._closed_i: Set[int] = set()
         self._closed_j: Set[int] = set()
 
     def _define_u(self) -> None:
-        self.u = [0.0 for _ in range(len(self.supply))]
+        self._u = [0.0 for _ in range(len(self.supply))]
 
         for i in range(len(self.supply)):
             if i in self._closed_i: continue
@@ -61,11 +61,11 @@ class RusselApproximation:
                     current_u_i = self.table_content[i][j]
                     current_index = (i, j)
 
-            self.u.append(current_u_i)
+            self._u.append(current_u_i)
             self._u_v_indices.add(current_index)
 
     def _define_v(self) -> None:
-        self.v = [0.0 for _ in range(len(self.demand))]
+        self._v = [0.0 for _ in range(len(self.demand))]
 
         for j in range(len(self.demand)):
             if j in self._closed_j: continue
@@ -80,33 +80,33 @@ class RusselApproximation:
                     current_v_j = self.table_content[i][j]
                     current_index = (i, j)
 
-            self.v.append(current_v_j)
+            self._v.append(current_v_j)
             self._u_v_indices.add(current_index)
 
-    def define_u_v(self) -> None:
+    def _define_u_v(self) -> None:
         self._u_v_indices.clear()
         self._define_v()
         self._define_u()
 
-    def define_deltas(self) -> None:
-        self.deltas.clear()
+    def _define_deltas(self) -> None:
+        self._deltas.clear()
         for i in range(len(self.supply)):
             for j in range(len(self.demand)):
 
                 if ((i, j) in self._u_v_indices
                         or i in self._closed_i
-                        or j in self._closed_j):
-                    continue
+                        or j in self._closed_j
+                ): continue
 
                 current_delta: Delta = Delta(
                     c=self.table_content[i][j],
-                    u_i=self.u[i],
-                    v_j=self.v[j],
+                    u_i=self._u[i],
+                    v_j=self._v[j],
                     i=i, j=j
                 )
-                self.deltas.add(current_delta)
+                self._deltas.add(current_delta)
 
-    def add_solution(self, basic_variable: Delta, amount: float) -> None:
+    def _add_solution(self, basic_variable: Delta, amount: float) -> None:
         self.solution[basic_variable] = amount
 
         self.supply[basic_variable.i] -= amount
@@ -118,15 +118,15 @@ class RusselApproximation:
         if self.demand[basic_variable.j] == 0:
             self._closed_j.add(basic_variable.j)
 
-    def define_basic_variable(self) -> None:
-        basic_variable: Delta = min(self.deltas)
+    def _define_basic_variable(self) -> None:
+        basic_variable: Delta = min(self._deltas)
         amount: float = min(
             self.supply[basic_variable.i],
             self.demand[basic_variable.j]
         )
-        self.add_solution(basic_variable, amount)
+        self._add_solution(basic_variable, amount)
 
-    def define_last_basic_variables(self) -> None:
+    def _define_last_basic_variables(self) -> None:
         for i in range(len(self.supply)):
             for j in range(len(self.demand)):
                 if len(self._closed_i) == len(self.supply) and len(self._closed_j) == len(self.demand):
@@ -135,27 +135,27 @@ class RusselApproximation:
                 if i in self._closed_i or j in self._closed_j:
                     continue
 
-                self.define_u_v()
+                self._define_u_v()
                 basic_variable = Delta(
                     c=self.table_content[i][j],
-                    u_i=self.u[i],
-                    v_j=self.v[j],
+                    u_i=self._u[i],
+                    v_j=self._v[j],
                     i=i, j=j
                 )
                 amount: float = min(
                     self.supply[basic_variable.i],
                     self.demand[basic_variable.j]
                 )
-                self.add_solution(basic_variable, amount)
+                self._add_solution(basic_variable, amount)
 
     def find_solution(self):
         while True:
-            self.define_u_v()
-            self.define_deltas()
-            if len(self.deltas) == 0:
-                self.define_last_basic_variables()
+            self._define_u_v()
+            self._define_deltas()
+            if len(self._deltas) == 0:
+                self._define_last_basic_variables()
                 break
-            self.define_basic_variable()
+            self._define_basic_variable()
 
     def get_table_solution(self) -> List[List[float]]:
         self.find_solution()
